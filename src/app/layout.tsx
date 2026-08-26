@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as SonnerToaster } from "@/components/ui/sonner";
+import { Providers } from "@/components/Providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,33 +16,32 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "thechess — Play, Learn, Analyze Chess",
+  title: "thechess — Play Chess Online",
   description:
-    "A complete chess platform: play against an AI with three difficulty levels or a friend, solve tactical puzzles, study openings and lessons, analyze positions, and track your stats. No signup required. Link your own custom domain.",
+    "thechess — a gamified chess platform. Play real-time games against opponents worldwide, climb the rating ladder, earn XP, solve puzzles, and analyze your games.",
   keywords: [
     "chess",
-    "play chess",
+    "play chess online",
+    "chess multiplayer",
+    "chess rating",
     "chess puzzles",
     "chess lessons",
-    "chess openings",
-    "chess analysis",
     "chess AI",
     "free chess",
-    "custom domain chess",
   ],
   authors: [{ name: "thechess" }],
   openGraph: {
-    title: "thechess — Play, Learn, Analyze Chess",
+    title: "thechess — Play Chess Online",
     description:
-      "Play chess, solve puzzles, study openings, analyze positions, and track your stats. Bring your own custom domain.",
+      "Real-time chess multiplayer. Climb the rating ladder, earn XP, solve puzzles.",
     siteName: "thechess",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "thechess — Play, Learn, Analyze Chess",
+    title: "thechess — Play Chess Online",
     description:
-      "Play chess, solve puzzles, study openings, analyze positions, and track your stats.",
+      "Real-time chess multiplayer. Climb the rating ladder, earn XP, solve puzzles.",
   },
 };
 
@@ -51,11 +51,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className="dark">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
-        {children}
+        <Providers>{children}</Providers>
         <Toaster />
         <SonnerToaster position="top-center" richColors closeButton />
       </body>

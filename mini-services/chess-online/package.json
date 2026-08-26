@@ -1,0 +1,14 @@
+{
+  "name": "chess-online",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "bun --hot index.ts",
+    "start": "bun index.ts",
+    "build": "echo 'No build step needed — Bun runs TypeScript directly'"
+  },
+  "dependencies": {
+    "chess.js": "^1.4.0",
+    "socket.io": "^4.8.3"
+  }
+}

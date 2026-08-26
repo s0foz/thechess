@@ -4,20 +4,15 @@ import { useEffect, useState } from "react";
 import { Header, Footer, type TabId } from "@/components/thechess/Header";
 import { HomeSection } from "@/components/thechess/HomeSection";
 import { PlaySection } from "@/components/thechess/PlaySection";
+import { OnlinePlaySection } from "@/components/thechess/OnlinePlaySection";
 import { PuzzlesSection } from "@/components/thechess/PuzzlesSection";
 import { LearnSection } from "@/components/thechess/LearnSection";
 import { AnalysisSection } from "@/components/thechess/AnalysisSection";
-import { StatsSection } from "@/components/thechess/StatsSection";
+import { ProfileSection } from "@/components/thechess/ProfileSection";
+import { LeaderboardSection } from "@/components/thechess/LeaderboardSection";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<TabId>("home");
-  const [previewUrl, setPreviewUrl] = useState("");
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      setPreviewUrl(window.location.origin);
-    }
-  }, []);
 
   // Scroll to top when tab changes.
   useEffect(() => {
@@ -27,16 +22,18 @@ export default function Home() {
   }, [activeTab]);
 
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-b from-zinc-50 to-zinc-100 dark:from-zinc-950 dark:to-zinc-900">
-      <Header activeTab={activeTab} onTabChange={setActiveTab} previewUrl={previewUrl} />
+    <div className="flex min-h-screen flex-col bg-background">
+      <Header activeTab={activeTab} onTabChange={setActiveTab} />
 
       <main className="flex flex-1 flex-col">
-        {activeTab === "home" && <HomeSection onNavigate={setActiveTab} previewUrl={previewUrl} />}
-        {activeTab === "play" && <PlaySection />}
+        {activeTab === "home" && <HomeSection onNavigate={setActiveTab} />}
+        {activeTab === "play-ai" && <PlaySection />}
+        {activeTab === "play-online" && <OnlinePlaySection />}
         {activeTab === "puzzles" && <PuzzlesSection />}
         {activeTab === "learn" && <LearnSection />}
         {activeTab === "analysis" && <AnalysisSection />}
-        {activeTab === "stats" && <StatsSection />}
+        {activeTab === "profile" && <ProfileSection />}
+        {activeTab === "leaderboard" && <LeaderboardSection />}
       </main>
 
       <Footer />

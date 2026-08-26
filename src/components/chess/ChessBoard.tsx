@@ -205,12 +205,12 @@ export function ChessBoard({
                   )}
                   {piece && (
                     <div
-                      className="draggable-piece pointer-events-auto flex h-[88%] w-[88%] cursor-grab items-center justify-center active:cursor-grabbing"
+                      className="draggable-piece pointer-events-auto flex h-[92%] w-[92%] cursor-grab items-center justify-center active:cursor-grabbing"
                       draggable={!isGameOver && interactive && piece.color === snapshot.turn}
                       onDragStart={(e) => handleDragStart(e, square)}
                       onDragEnd={() => setDragOver(null)}
                     >
-                      <Piece piece={piece} size="100%" />
+                      <Piece piece={piece} />
                     </div>
                   )}
                   {isLegalTarget && !isCapture && (

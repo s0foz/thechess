@@ -99,10 +99,9 @@ function CapturedRow({
           pieces.map((p, i) => (
             <span
               key={`${p}-${i}`}
-              className="-ml-1 first:ml-0"
-              style={{ fontSize: "18px", lineHeight: 1 }}
+              className="-ml-1.5 h-5 w-5 first:ml-0"
             >
-              <Piece piece={{ type: p, color }} size={18} />
+              <Piece piece={{ type: p, color }} />
             </span>
           ))
         )}

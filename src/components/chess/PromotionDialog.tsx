@@ -39,8 +39,8 @@ export function PromotionDialog({ pending, onSelect, onCancel }: PromotionDialog
               className="flex flex-col items-center justify-center gap-1 rounded-lg border-2 border-border bg-card p-3 transition-colors hover:border-emerald-500 hover:bg-emerald-500/10"
               aria-label={`Promote to ${labels[p]}`}
             >
-              <div className="text-4xl leading-none">
-                <Piece piece={{ type: p, color }} size={40} />
+              <div className="h-12 w-12">
+                <Piece piece={{ type: p, color }} />
               </div>
               <span className="text-xs font-medium text-foreground">{labels[p]}</span>
             </button>

@@ -1,32 +1,48 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String   @id @default(cuid())
+  username     String   @unique
+  email        String?  @unique
+  passwordHash String
+  rating       Int      @default(1200)
+  xp           Int      @default(0)
+  level        Int      @default(1)
+  wins         Int      @default(0)
+  losses       Int      @default(0)
+  draws        Int      @default(0)
+  puzzlesSolved Int     @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  gamesWhite Game[] @relation("WhitePlayer")
+  gamesBlack Game[] @relation("BlackPlayer")
 }
 
-model Post {
-  id        String   @id @default(cuid())
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  authorId  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Game {
+  id        String    @id @default(cuid())
+  whiteId   String
+  blackId   String
+  white     User      @relation("WhitePlayer", fields: [whiteId], references: [id])
+  black     User      @relation("BlackPlayer", fields: [blackId], references: [id])
+  moves     String    @default("[]") // JSON array of SAN moves
+  result    String    @default("ongoing") // "ongoing" | "white" | "black" | "draw"
+  reason    String?   // "checkmate" | "resign" | "timeout" | "draw_agreement" | "abandon"
+  createdAt DateTime  @default(now())
+  endedAt   DateTime?
+
+  @@index([whiteId])
+  @@index([blackId])
+  @@index([createdAt])
 }
