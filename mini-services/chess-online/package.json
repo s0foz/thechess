@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "bun --hot index.ts",
     "start": "bun index.ts",
-    "build": "echo 'No build step needed — Bun runs TypeScript directly'"
+    "build": "echo skip"
   },
   "dependencies": {
     "chess.js": "^1.4.0",
