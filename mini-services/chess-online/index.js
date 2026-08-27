@@ -1,31 +1,12 @@
-import { createServer } from "http";
-import { Server } from "socket.io";
-import { Chess } from "chess.js";
+const { createServer } = require("http");
+const { Server } = require("socket.io");
+const { Chess } = require("chess.js");
 
 // In-memory state for the matchmaking queue + active games.
-interface QueuedPlayer {
-  socketId: string;
-  userId: string;
-  username: string;
-  rating: number;
-  joinedAt: number;
-}
-
-interface OnlineGame {
-  id: string;
-  white: { userId: string; username: string; rating: number; socketId: string };
-  black: { userId: string; username: string; rating: number; socketId: string };
-  chess: Chess;
-  moves: string[]; // SAN moves
-  createdAt: number;
-  // For disconnect timeouts
-  disconnectTimers: { white?: NodeJS.Timeout; black?: NodeJS.Timeout };
-}
-
-const queue: QueuedPlayer[] = [];
-const games = new Map<string, OnlineGame>();
+const queue = [];
+const games = new Map();
 // Map socketId -> gameId (for routing moves)
-const socketGame = new Map<string, string>();
+const socketGame = new Map();
 
 function generateGameId() {
   return `g_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
@@ -41,7 +22,7 @@ function tryMatchmake() {
     const b = queue[i + 1];
     const diff = Math.abs(a.rating - b.rating);
     // Allow up to 300 rating diff after 30s of waiting, else 150.
-    const maxDiff = Date.now() - Math.min(a.joinedAt, b.joinedAt) > 30_000 ? 300 : 150;
+    const maxDiff = Date.now() - Math.min(a.joinedAt, b.joinedAt) > 30000 ? 300 : 150;
     if (diff <= maxDiff) {
       queue.splice(i, 2);
       startGame(a, b);
@@ -51,12 +32,12 @@ function tryMatchmake() {
   }
 }
 
-function startGame(p1: QueuedPlayer, p2: QueuedPlayer) {
+function startGame(p1, p2) {
   const gameId = generateGameId();
   // Randomize colors.
   const white = Math.random() < 0.5 ? p1 : p2;
   const black = white === p1 ? p2 : p1;
-  const game: OnlineGame = {
+  const game = {
     id: gameId,
     white: { userId: white.userId, username: white.username, rating: white.rating, socketId: white.socketId },
     black: { userId: black.userId, username: black.username, rating: black.rating, socketId: black.socketId },
@@ -84,19 +65,15 @@ function startGame(p1: QueuedPlayer, p2: QueuedPlayer) {
   console.log(`[game ${gameId}] started: ${white.username} (${white.rating}) vs ${black.username} (${black.rating})`);
 }
 
-function endGame(
-  game: OnlineGame,
-  result: "white" | "black" | "draw",
-  reason: string,
-) {
+function endGame(game, result, reason) {
   if (game.disconnectTimers.white) clearTimeout(game.disconnectTimers.white);
   if (game.disconnectTimers.black) clearTimeout(game.disconnectTimers.black);
   io.to(game.white.socketId).emit("game:end", { result, reason, moves: game.moves });
   io.to(game.black.socketId).emit("game:end", { result, reason, moves: game.moves });
 
   // Notify the Next.js app to persist the result + update ratings.
-  const serviceSecret = process.env.SERVICE_SECRET ?? "dev-service-secret";
-  const endpoint = process.env.GAME_END_ENDPOINT ?? "http://localhost:3000/api/game-end";
+  const serviceSecret = process.env.SERVICE_SECRET || "dev-service-secret";
+  const endpoint = process.env.GAME_END_ENDPOINT || "http://localhost:3000/api/game-end";
   fetch(endpoint, {
     method: "POST",
     headers: {
@@ -129,7 +106,7 @@ const io = new Server(httpServer, {
 io.on("connection", (socket) => {
   console.log(`[socket] connected: ${socket.id}`);
 
-  socket.on("queue:join", (data: { userId: string; username: string; rating: number }) => {
+  socket.on("queue:join", (data) => {
     // Remove if already queued.
     const existing = queue.findIndex((p) => p.socketId === socket.id);
     if (existing !== -1) queue.splice(existing, 1);
@@ -154,7 +131,7 @@ io.on("connection", (socket) => {
     socket.emit("queue:left", {});
   });
 
-  socket.on("game:move", (data: { from: string; to: string; promotion?: string }) => {
+  socket.on("game:move", (data) => {
     const gameId = socketGame.get(socket.id);
     if (!gameId) return;
     const game = games.get(gameId);
@@ -164,7 +141,7 @@ io.on("connection", (socket) => {
     const isWhite = game.white.socketId === socket.id;
     if ((turn === "w") !== isWhite) return;
     try {
-      const mv = game.chess.move({ from: data.from, to: data.to, promotion: data.promotion ?? "q" });
+      const mv = game.chess.move({ from: data.from, to: data.to, promotion: data.promotion || "q" });
       if (!mv) return;
       game.moves.push(mv.san);
       const opponentSocketId = isWhite ? game.black.socketId : game.white.socketId;
@@ -211,7 +188,7 @@ io.on("connection", (socket) => {
     io.to(opponentSocketId).emit("game:draw_offer", { from: isWhite ? "white" : "black" });
   });
 
-  socket.on("game:draw_response", (data: { accept: boolean }) => {
+  socket.on("game:draw_response", (data) => {
     const gameId = socketGame.get(socket.id);
     if (!gameId) return;
     const game = games.get(gameId);
@@ -249,15 +226,14 @@ io.on("connection", (socket) => {
           if (isWhite ? g.white.socketId === socket.id : g.black.socketId === socket.id) {
             endGame(g, isWhite ? "black" : "white", "abandon");
           }
-        }, 30_000);
+        }, 30000);
       }
     }
     console.log(`[socket] disconnected: ${socket.id}`);
   });
 
   // Allow a player to "rejoin" a game after a transient disconnect.
-  // (Not full reconnection support, but enough for the basic flow.)
-  socket.on("game:reconnect", (data: { gameId: string; userId: string }) => {
+  socket.on("game:reconnect", (data) => {
     const game = games.get(data.gameId);
     if (!game) {
       socket.emit("game:reconnect_failed", { reason: "Game not found." });
@@ -272,7 +248,7 @@ io.on("connection", (socket) => {
     // Update socketId, cancel disconnect timer.
     const side = isWhite ? "white" : "black";
     if (game.disconnectTimers[side]) {
-      clearTimeout(game.disconnectTimers[side]!);
+      clearTimeout(game.disconnectTimers[side]);
       delete game.disconnectTimers[side];
     }
     if (isWhite) {
@@ -297,7 +273,6 @@ io.on("connection", (socket) => {
     });
     // Send moves so far.
     for (const san of game.moves) {
-      // We don't have full from/to info, but the client can replay SAN via chess.js
       socket.emit("game:move:replay", { san });
     }
     // Notify opponent that player reconnected.
@@ -306,7 +281,8 @@ io.on("connection", (socket) => {
   });
 });
 
-const PORT = 3003;
+// Use Render's PORT env var if set, otherwise default to 3003.
+const PORT = process.env.PORT || 3003;
 httpServer.listen(PORT, () => {
   console.log(`[chess-online] WebSocket server running on port ${PORT}`);
 });
