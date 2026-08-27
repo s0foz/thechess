@@ -48,10 +48,16 @@ export function useOnlineGame({ enabled, user, onGameEnd }: UseOnlineGameArgs) {
     drawOfferedBy: null,
   });
 
+  // Connect to the socket server (Render WebSocket service).
+  // ⚠️ Replace this URL with your actual Render service URL.
+  const SOCKET_URL =
+    process.env.NEXT_PUBLIC_SOCKET_URL ??
+    "https://thechess-ws.onrender.com";
+
   // Connect to the socket server.
   useEffect(() => {
     if (!enabled) return;
-    const socket = io("/?XTransformPort=3003", {
+    const socket = io(SOCKET_URL, {
       transports: ["websocket", "polling"],
       forceNew: true,
       reconnection: true,
