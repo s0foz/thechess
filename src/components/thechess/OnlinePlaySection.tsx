@@ -215,6 +215,8 @@ export function OnlinePlaySection() {
                 orientation={orientation}
                 interactive={state.status === "playing" && !!isHumanTurn}
                 onMove={(from: Square, to: Square) => online.makeMove(from, to)}
+                myPieceSkin={user?.activePieceSkin as any}
+                boardSkin={user?.activeBoardSkin as any}
               />
             </div>
           )}

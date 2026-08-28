@@ -4,12 +4,19 @@ import { Fragment, useMemo, useState } from "react";
 import { Chess, type Square } from "chess.js";
 import type { EngineSnapshot, PieceColor } from "@/lib/chess/engine";
 import { Piece } from "@/lib/chess/pieces";
+import { getBoardSkin, type PieceSkinId, type BoardSkinId } from "@/lib/thechess/shop";
 
 interface ChessBoardProps {
   snapshot: EngineSnapshot;
   orientation: PieceColor;
   interactive: boolean;
   onMove: (from: Square, to: Square) => void;
+  /** Active piece skin for the bottom player (orientation color). */
+  myPieceSkin?: PieceSkinId;
+  /** Active piece skin for the top player (opponent). Usually "default". */
+  opponentPieceSkin?: PieceSkinId;
+  /** Active board skin. */
+  boardSkin?: BoardSkinId;
 }
 
 const FILES = ["a", "b", "c", "d", "e", "f", "g", "h"];
@@ -30,10 +37,17 @@ export function ChessBoard({
   orientation,
   interactive,
   onMove,
+  myPieceSkin = "default",
+  opponentPieceSkin = "default",
+  boardSkin = "default",
 }: ChessBoardProps) {
   const [selected, setSelected] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState<string | null>(null);
   const [prevFen, setPrevFen] = useState<string>(snapshot.fen);
+
+  const board = getBoardSkin(boardSkin);
+  const lightColor = board.light;
+  const darkColor = board.dark;
 
   const visualRows = orientation === "w" ? RANKS : [...RANKS].reverse();
   const visualCols = orientation === "w" ? FILES : [...FILES].reverse();
@@ -182,9 +196,9 @@ export function ChessBoard({
                   className={[
                     "chess-square relative flex aspect-square w-full items-center justify-center",
                     "cursor-pointer transition-colors duration-100",
-                    isLight ? "bg-amber-100" : "bg-amber-800",
                     isDragOver ? "ring-2 ring-inset ring-emerald-400" : "",
                   ].join(" ")}
+                  style={{ backgroundColor: isLight ? lightColor : darkColor }}
                   data-square={square}
                   onClick={() => handleSquareClick(square)}
                   onDragOver={(e) => handleDragOver(e, square)}
@@ -210,7 +224,7 @@ export function ChessBoard({
                       onDragStart={(e) => handleDragStart(e, square)}
                       onDragEnd={() => setDragOver(null)}
                     >
-                      <Piece piece={piece} />
+                      <Piece piece={piece} skinId={piece.color === orientation ? myPieceSkin : opponentPieceSkin} />
                     </div>
                   )}
                   {isLegalTarget && !isCapture && (

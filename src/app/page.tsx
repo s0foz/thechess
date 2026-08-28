@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import { Header, Footer, type TabId } from "@/components/thechess/Header";
 import { HomeSection } from "@/components/thechess/HomeSection";
 import { PlaySection } from "@/components/thechess/PlaySection";
@@ -10,9 +11,11 @@ import { LearnSection } from "@/components/thechess/LearnSection";
 import { AnalysisSection } from "@/components/thechess/AnalysisSection";
 import { ProfileSection } from "@/components/thechess/ProfileSection";
 import { LeaderboardSection } from "@/components/thechess/LeaderboardSection";
+import { ShopSection } from "@/components/thechess/ShopSection";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<TabId>("home");
+  const { update: updateSession } = useSession();
 
   // Scroll to top when tab changes.
   useEffect(() => {
@@ -20,6 +23,11 @@ export default function Home() {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   }, [activeTab]);
+
+  // After shop purchases, refresh the session so the header + board reflect the new skin/pieces.
+  const handleUserUpdate = useCallback(async () => {
+    await updateSession();
+  }, [updateSession]);
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -32,6 +40,7 @@ export default function Home() {
         {activeTab === "puzzles" && <PuzzlesSection />}
         {activeTab === "learn" && <LearnSection />}
         {activeTab === "analysis" && <AnalysisSection />}
+        {activeTab === "shop" && <ShopSection onUserUpdate={handleUserUpdate} />}
         {activeTab === "profile" && <ProfileSection />}
         {activeTab === "leaderboard" && <LeaderboardSection />}
       </main>

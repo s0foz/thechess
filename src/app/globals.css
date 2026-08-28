@@ -83,37 +83,41 @@
 }
 
 .dark {
-  --background: oklch(0.13 0.015 250); /* near-black blue */
+  /* Duolingo-style flat background (NOT gradient) so neomorphic shadows read correctly */
+  --background: oklch(0.20 0.005 250); /* flat dark slate */
   --foreground: oklch(0.97 0 0);
-  --card: oklch(0.18 0.02 250);
+  --card: oklch(0.20 0.005 250); /* same as bg so cards blend into the surface */
   --card-foreground: oklch(0.97 0 0);
-  --popover: oklch(0.18 0.02 250);
+  --popover: oklch(0.22 0.005 250);
   --popover-foreground: oklch(0.97 0 0);
   --primary: oklch(0.75 0.18 162); /* bright emerald */
   --primary-foreground: oklch(0.13 0 0);
-  --secondary: oklch(0.24 0.02 250);
+  --secondary: oklch(0.24 0.005 250);
   --secondary-foreground: oklch(0.97 0 0);
-  --muted: oklch(0.22 0.02 250);
-  --muted-foreground: oklch(0.68 0.02 250);
+  --muted: oklch(0.22 0.005 250);
+  --muted-foreground: oklch(0.68 0.01 250);
   --accent: oklch(0.78 0.16 80); /* amber */
   --accent-foreground: oklch(0.18 0 0);
   --destructive: oklch(0.65 0.22 22);
-  --border: oklch(0.28 0.02 250);
-  --input: oklch(0.22 0.02 250);
+  --border: oklch(0.28 0.005 250);
+  --input: oklch(0.22 0.005 250);
   --ring: oklch(0.75 0.18 162);
   --chart-1: oklch(0.75 0.18 162);
   --chart-2: oklch(0.78 0.16 80);
   --chart-3: oklch(0.7 0.2 280);
   --chart-4: oklch(0.7 0.2 220);
   --chart-5: oklch(0.7 0.22 22);
-  --sidebar: oklch(0.16 0.02 250);
+  --sidebar: oklch(0.20 0.005 250);
   --sidebar-foreground: oklch(0.97 0 0);
   --sidebar-primary: oklch(0.75 0.18 162);
   --sidebar-primary-foreground: oklch(0.13 0 0);
-  --sidebar-accent: oklch(0.22 0.02 250);
+  --sidebar-accent: oklch(0.22 0.005 250);
   --sidebar-accent-foreground: oklch(0.97 0 0);
-  --sidebar-border: oklch(0.28 0.02 250);
+  --sidebar-border: oklch(0.28 0.005 250);
   --sidebar-ring: oklch(0.75 0.18 162);
+  /* Neomorphic shadow colors — derived from background */
+  --neo-shadow-dark: oklch(0.13 0.005 250);
+  --neo-shadow-light: oklch(0.27 0.005 250);
 }
 
 @layer base {
@@ -125,12 +129,141 @@
   }
   body {
     @apply bg-background text-foreground;
-    /* subtle radial glow at the top — gives the gamified "arena" feel */
-    background-image:
-      radial-gradient(circle at 50% -10%, oklch(0.4 0.15 162 / 0.18), transparent 60%),
-      radial-gradient(circle at 90% 0%, oklch(0.5 0.15 80 / 0.08), transparent 50%);
-    background-attachment: fixed;
+    /* Duolingo neomorphism: flat background, no gradient. Surfaces pop via shadows. */
   }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   NEOMORPHIC UTILITY CLASSES (Duolingo-inspired)
+   Surfaces are flat with extruded soft shadows. Pressed states
+   invert to inset shadows. Border radius is generous.
+   ───────────────────────────────────────────────────────────── */
+
+.neo-surface {
+  background: var(--background);
+  border-radius: 1.25rem;
+  box-shadow:
+    8px 8px 16px var(--neo-shadow-dark),
+    -8px -8px 16px var(--neo-shadow-light);
+}
+
+.neo-surface-sm {
+  background: var(--background);
+  border-radius: 1rem;
+  box-shadow:
+    4px 4px 8px var(--neo-shadow-dark),
+    -4px -4px 8px var(--neo-shadow-light);
+}
+
+.neo-raised {
+  background: var(--background);
+  border-radius: 1rem;
+  box-shadow:
+    6px 6px 12px var(--neo-shadow-dark),
+    -6px -6px 12px var(--neo-shadow-light);
+  transition: box-shadow 120ms ease-out, transform 120ms ease-out;
+}
+
+.neo-raised:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    8px 8px 16px var(--neo-shadow-dark),
+    -8px -8px 16px var(--neo-shadow-light);
+}
+
+.neo-raised:active,
+.neo-pressed {
+  transform: translateY(0);
+  box-shadow:
+    inset 4px 4px 8px var(--neo-shadow-dark),
+    inset -4px -4px 8px var(--neo-shadow-light) !important;
+}
+
+.neo-inset {
+  background: var(--background);
+  border-radius: 1rem;
+  box-shadow:
+    inset 4px 4px 8px var(--neo-shadow-dark),
+    inset -4px -4px 8px var(--neo-shadow-light);
+}
+
+.neo-inset-sm {
+  background: var(--background);
+  border-radius: 0.75rem;
+  box-shadow:
+    inset 2px 2px 4px var(--neo-shadow-dark),
+    inset -2px -2px 4px var(--neo-shadow-light);
+}
+
+/* Primary button (emerald) — flat color, no neomorphic shadow on the surface itself */
+.neo-btn-primary {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-radius: 1rem;
+  font-weight: 700;
+  box-shadow:
+    0 4px 0 oklch(0.55 0.18 162),
+    6px 6px 12px var(--neo-shadow-dark),
+    -6px -6px 12px var(--neo-shadow-light);
+  transition: all 100ms ease-out;
+}
+
+.neo-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 5px 0 oklch(0.55 0.18 162),
+    8px 8px 14px var(--neo-shadow-dark),
+    -8px -8px 14px var(--neo-shadow-light);
+}
+
+.neo-btn-primary:active {
+  transform: translateY(3px);
+  box-shadow:
+    0 1px 0 oklch(0.55 0.18 162),
+    4px 4px 8px var(--neo-shadow-dark),
+    -4px -4px 8px var(--neo-shadow-light);
+}
+
+.neo-btn-secondary {
+  background: var(--background);
+  color: var(--foreground);
+  border-radius: 1rem;
+  font-weight: 600;
+  box-shadow:
+    6px 6px 12px var(--neo-shadow-dark),
+    -6px -6px 12px var(--neo-shadow-light);
+  transition: all 100ms ease-out;
+}
+
+.neo-btn-secondary:hover {
+  transform: translateY(-1px);
+}
+
+.neo-btn-secondary:active {
+  transform: translateY(2px);
+  box-shadow:
+    inset 3px 3px 6px var(--neo-shadow-dark),
+    inset -3px -3px 6px var(--neo-shadow-light);
+}
+
+/* Active tab pill — inset look */
+.neo-tab-active {
+  background: var(--background);
+  color: var(--primary);
+  border-radius: 0.75rem;
+  box-shadow:
+    inset 3px 3px 6px var(--neo-shadow-dark),
+    inset -3px -3px 6px var(--neo-shadow-light);
+}
+
+.neo-tab-inactive {
+  color: var(--muted-foreground);
+  border-radius: 0.75rem;
+  transition: all 120ms ease-out;
+}
+
+.neo-tab-inactive:hover {
+  color: var(--foreground);
 }
 
 /* Chess piece styling — SVG-based pieces that scale crisply to fill the

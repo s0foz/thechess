@@ -29,9 +29,10 @@ interface UseOnlineGameArgs {
   enabled: boolean;
   user: { id: string; username: string; rating: number } | undefined;
   onGameEnd?: (result: "white" | "black" | "draw", reason: string) => void;
+  onCapture?: (pieceType: "p" | "n" | "b" | "r" | "q", awarded: number) => void;
 }
 
-export function useOnlineGame({ enabled, user, onGameEnd }: UseOnlineGameArgs) {
+export function useOnlineGame({ enabled, user, onGameEnd, onCapture }: UseOnlineGameArgs) {
   const socketRef = useRef<Socket | null>(null);
   const engineRef = useRef<ChessEngine>(new ChessEngine());
   const [state, setState] = useState<OnlineGameState>({
@@ -125,6 +126,16 @@ export function useOnlineGame({ enabled, user, onGameEnd }: UseOnlineGameArgs) {
         snapshot: engineRef.current.snapshot(),
       }));
       onGameEnd?.(data.result, data.reason);
+    });
+
+    socket.on("game:capture", (data: { pieceType: string; awarded: number }) => {
+      // Server tells us we captured a piece. Award currency via the API.
+      fetch("/api/capture", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pieceType: data.pieceType }),
+      }).catch(() => {});
+      onCapture?.(data.pieceType as any, data.awarded);
     });
 
     socket.on("game:opponent_disconnected", (data: { graceSeconds: number }) => {

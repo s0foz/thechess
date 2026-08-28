@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { Chess, type Square } from "chess.js";
 import { ChessBoard } from "@/components/chess/ChessBoard";
 import { ChessEngine, type EngineSnapshot } from "@/lib/chess/engine";
+import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,6 +16,7 @@ import { MoveHistory } from "@/components/chess/MoveHistory";
 const STARTING_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 export function AnalysisSection() {
+  const { user } = useAuth();
   const [engine] = useState(() => new ChessEngine());
   const [snapshot, setSnapshot] = useState<EngineSnapshot>(() => engine.snapshot());
   const [orientation, setOrientation] = useState<"w" | "b">("w");
@@ -145,6 +147,8 @@ export function AnalysisSection() {
                 orientation={orientation}
                 interactive
                 onMove={handleMove}
+                myPieceSkin={user?.activePieceSkin as any}
+                boardSkin={user?.activeBoardSkin as any}
               />
             </div>
 

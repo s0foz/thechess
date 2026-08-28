@@ -14,6 +14,12 @@ CREATE TABLE "User" (
     "losses" INTEGER NOT NULL DEFAULT 0,
     "draws" INTEGER NOT NULL DEFAULT 0,
     "puzzlesSolved" INTEGER NOT NULL DEFAULT 0,
+    "pieces" INTEGER NOT NULL DEFAULT 50,
+    "ownedSkins" TEXT NOT NULL DEFAULT '[]',
+    "ownedTitles" TEXT NOT NULL DEFAULT '[]',
+    "activePieceSkin" TEXT NOT NULL DEFAULT 'default',
+    "activeBoardSkin" TEXT NOT NULL DEFAULT 'default',
+    "activeTitle" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 

@@ -12,19 +12,25 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  username     String   @unique
-  email        String?  @unique
-  passwordHash String
-  rating       Int      @default(1200)
-  xp           Int      @default(0)
-  level        Int      @default(1)
-  wins         Int      @default(0)
-  losses       Int      @default(0)
-  draws        Int      @default(0)
-  puzzlesSolved Int     @default(0)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id              String   @id @default(cuid())
+  username        String   @unique
+  email           String?  @unique
+  passwordHash    String
+  rating          Int      @default(1200)
+  xp              Int      @default(0)
+  level           Int      @default(1)
+  wins            Int      @default(0)
+  losses          Int      @default(0)
+  draws           Int      @default(0)
+  puzzlesSolved   Int      @default(0)
+  pieces          Int      @default(50) // currency, starts with 50
+  ownedSkins      String   @default("[]") // JSON array of skin IDs
+  ownedTitles     String   @default("[]") // JSON array of title IDs
+  activePieceSkin String   @default("default")
+  activeBoardSkin String   @default("default")
+  activeTitle     String?  // null = no title equipped
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   gamesWhite Game[] @relation("WhitePlayer")
   gamesBlack Game[] @relation("BlackPlayer")

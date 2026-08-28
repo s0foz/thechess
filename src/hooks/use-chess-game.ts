@@ -33,6 +33,7 @@ export function useChessGame(initialSettings?: GameSettings) {
   const [pendingPromotion, setPendingPromotion] = useState<PendingPromotion | null>(null);
   const [isAiThinking, setIsAiThinking] = useState(false);
   const [lastMoveSan, setLastMoveSan] = useState<string | null>(null);
+  const [captureFlash, setCaptureFlash] = useState<{ pieceType: "p" | "n" | "b" | "r" | "q"; awarded: number } | null>(null);
 
   const refresh = useCallback(() => {
     setSnapshot(engineRef.current.snapshot());
@@ -46,6 +47,7 @@ export function useChessGame(initialSettings?: GameSettings) {
       setLastMoveSan(null);
       setPendingPromotion(null);
       setIsAiThinking(false);
+      setCaptureFlash(null);
     },
     [],
   );
@@ -56,10 +58,27 @@ export function useChessGame(initialSettings?: GameSettings) {
       if (mv) {
         setSnapshot(engineRef.current.snapshot());
         setLastMoveSan(mv.san);
+        // If the human captured a piece, award currency + flash a notification.
+        if (mv.captured) {
+          const PIECE_VALUES: Record<string, number> = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 };
+          const awarded = PIECE_VALUES[mv.captured] ?? 0;
+          // Only the human's captures count (not AI captures of human pieces).
+          if (mv.color === settings.playerColor) {
+            setCaptureFlash({ pieceType: mv.captured, awarded });
+            // Award via the API (auth uses session cookie).
+            fetch("/api/capture", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ pieceType: mv.captured }),
+            }).catch(() => {});
+            // Clear the flash after 2.5s.
+            setTimeout(() => setCaptureFlash(null), 2500);
+          }
+        }
       }
       return mv;
     },
-    [],
+    [settings.playerColor],
   );
 
   const undo = useCallback(() => {
@@ -156,6 +175,7 @@ export function useChessGame(initialSettings?: GameSettings) {
     isAiThinking,
     lastMoveSan,
     isHumanTurn,
+    captureFlash,
     requestMove,
     completePromotion,
     cancelPromotion,

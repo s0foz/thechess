@@ -5,6 +5,7 @@
 // looks cohesive and "fresh" rather than ornate/traditional.
 
 import type { PieceColor, PieceInfo } from "@/lib/chess/engine";
+import { getPieceSkin, type PieceSkinId } from "@/lib/thechess/shop";
 
 type PieceType = "p" | "n" | "b" | "r" | "q" | "k";
 
@@ -13,27 +14,31 @@ interface PieceProps {
   className?: string;
   /** Legacy prop — ignored. Pieces always fill their container. */
   size?: string | number;
+  /** Skin to render. Defaults to "default" (Classic Ivory). */
+  skinId?: PieceSkinId;
 }
 
-const PALETTE = {
+const DEFAULT_PALETTE = {
   white: {
     body: "#fafaf9",
-    bodyShade: "#d6d3d1",
+    shade: "#d6d3d1",
     base: "#e7e5e4",
     outline: "#1c1917",
   },
   black: {
     body: "#1c1917",
-    bodyShade: "#292524",
+    shade: "#292524",
     base: "#0c0a09",
     outline: "#0c0a09",
     highlight: "#44403c",
   },
 } as const;
 
-export function Piece({ piece, className = "" }: PieceProps) {
+export function Piece({ piece, className = "", skinId = "default" }: PieceProps) {
   const isWhite = piece.color === "w";
-  const c = isWhite ? PALETTE.white : PALETTE.black;
+  const skin = getPieceSkin(skinId);
+  // Use the skin's palette if available, otherwise fall back to default.
+  const c = skin?.palette ? skin.palette[isWhite ? "white" : "black"] : (isWhite ? DEFAULT_PALETTE.white : DEFAULT_PALETTE.black);
   const type = piece.type as PieceType;
 
   return (

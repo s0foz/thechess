@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useChessGame, type GameSettings } from "@/hooks/use-chess-game";
+import { useAuth } from "@/hooks/use-auth";
 import { ChessBoard } from "@/components/chess/ChessBoard";
 import { MoveHistory } from "@/components/chess/MoveHistory";
 import { CapturedPieces } from "@/components/chess/CapturedPieces";
@@ -14,6 +15,7 @@ import { toast } from "sonner";
 import { loadStats, recordGame, type Stats } from "@/lib/thechess/stats";
 
 export function PlaySection() {
+  const { user } = useAuth();
   const [orientation, setOrientation] = useState<"w" | "b">("w");
   const [pendingSettings, setPendingSettings] = useState<GameSettings>({
     mode: "ai",
@@ -40,6 +42,7 @@ export function PlaySection() {
     isAiThinking,
     lastMoveSan,
     isHumanTurn,
+    captureFlash,
     requestMove,
     completePromotion,
     cancelPromotion,
@@ -215,7 +218,14 @@ export function PlaySection() {
               orientation={orientation}
               interactive={isHumanTurn && !isGameOver}
               onMove={handleMove}
+              myPieceSkin={user?.activePieceSkin as any}
+              boardSkin={user?.activeBoardSkin as any}
             />
+            {captureFlash && (
+              <div className="pointer-events-none fixed left-1/2 top-1/3 z-50 -translate-x-1/2 animate-pulse rounded-full bg-amber-500/90 px-4 py-2 text-sm font-bold text-white shadow-lg pop-in">
+                +{captureFlash.awarded} pieces!
+              </div>
+            )}
           </div>
 
           <div className="w-full max-w-[640px] rounded-md bg-card/60 p-2 ring-1 ring-border">

@@ -38,11 +38,15 @@ export const authOptions: NextAuthOptions = {
         token.id = (user as any).id;
         token.username = (user as any).name;
       }
-      // Refresh rating/level from DB on each token creation/refresh
+      // Refresh rating/level + shop data from DB on each token creation/refresh
       if (token.id) {
         const dbUser = await db.user.findUnique({
           where: { id: token.id as string },
-          select: { rating: true, level: true, xp: true, wins: true, losses: true, draws: true, puzzlesSolved: true },
+          select: {
+            rating: true, level: true, xp: true, wins: true, losses: true, draws: true, puzzlesSolved: true,
+            pieces: true, ownedSkins: true, ownedTitles: true,
+            activePieceSkin: true, activeBoardSkin: true, activeTitle: true,
+          },
         });
         if (dbUser) {
           token.rating = dbUser.rating;
@@ -52,6 +56,12 @@ export const authOptions: NextAuthOptions = {
           token.losses = dbUser.losses;
           token.draws = dbUser.draws;
           token.puzzlesSolved = dbUser.puzzlesSolved;
+          token.pieces = dbUser.pieces;
+          token.ownedSkins = dbUser.ownedSkins;
+          token.ownedTitles = dbUser.ownedTitles;
+          token.activePieceSkin = dbUser.activePieceSkin;
+          token.activeBoardSkin = dbUser.activeBoardSkin;
+          token.activeTitle = dbUser.activeTitle;
         }
       }
       return token;
@@ -67,6 +77,12 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).losses = token.losses;
         (session.user as any).draws = token.draws;
         (session.user as any).puzzlesSolved = token.puzzlesSolved;
+        (session.user as any).pieces = token.pieces;
+        (session.user as any).ownedSkins = token.ownedSkins ? JSON.parse(token.ownedSkins as string) : [];
+        (session.user as any).ownedTitles = token.ownedTitles ? JSON.parse(token.ownedTitles as string) : [];
+        (session.user as any).activePieceSkin = token.activePieceSkin;
+        (session.user as any).activeBoardSkin = token.activeBoardSkin;
+        (session.user as any).activeTitle = token.activeTitle;
       }
       return session;
     },

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -15,6 +15,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Logo } from "./Logo";
 import { AuthModal } from "./AuthModal";
 import { tierForRating, xpProgress } from "@/lib/thechess/tiers";
+import { getTitle } from "@/lib/thechess/shop";
 import type { TabId } from "./Header";
 import {
   LogOut,
@@ -22,6 +23,8 @@ import {
   Trophy,
   ChevronDown,
   Crown,
+  Coins,
+  ShoppingBag,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -37,6 +40,7 @@ const TABS: Array<{ id: TabId; label: string }> = [
   { id: "puzzles", label: "Puzzles" },
   { id: "learn", label: "Learn" },
   { id: "analysis", label: "Analysis" },
+  { id: "shop", label: "Shop" },
   { id: "leaderboard", label: "Leaderboard" },
 ];
 
@@ -58,6 +62,7 @@ export function Header({ activeTab, onTabChange }: HeaderProps) {
 
   const tier = user ? tierForRating(user.rating) : null;
   const xp = user ? xpProgress(user.xp) : null;
+  const title = user ? getTitle(user.activeTitle) : null;
 
   return (
     <>
@@ -107,68 +112,97 @@ export function Header({ activeTab, onTabChange }: HeaderProps) {
             {isLoading ? (
               <div className="h-8 w-20 animate-pulse rounded-md bg-muted" />
             ) : isAuthenticated && user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-2 rounded-full border border-border bg-card py-1 pl-1 pr-2 transition-colors hover:bg-muted">
-                    <div
-                      className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold text-white tier-${tier?.id}`}
-                    >
-                      {user.username.slice(0, 1).toUpperCase()}
-                    </div>
-                    <div className="hidden text-left sm:block">
-                      <div className="text-xs font-semibold leading-tight text-foreground">
-                        {user.username}
+              <>
+                {/* Pieces currency display */}
+                <button
+                  onClick={() => onTabChange("shop")}
+                  className="flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1 transition-colors hover:bg-muted"
+                  title="Your pieces balance — click to visit shop"
+                >
+                  <Coins className="h-3.5 w-3.5 text-amber-400" />
+                  <span className="text-xs font-bold text-foreground">{user.pieces}</span>
+                </button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="flex items-center gap-2 rounded-full border border-border bg-card py-1 pl-1 pr-2 transition-colors hover:bg-muted">
+                      <div
+                        className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold text-white tier-${tier?.id}`}
+                      >
+                        {user.username.slice(0, 1).toUpperCase()}
                       </div>
-                      <div className="text-[10px] leading-tight text-muted-foreground">
-                        <span style={{ color: tier?.color }}>{user.rating}</span> · L{user.level}
-                      </div>
-                    </div>
-                    <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>
-                    <div className="flex flex-col gap-1">
-                      <span className="text-sm font-semibold">{user.username}</span>
-                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <span
-                          className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-bold text-white tier-${tier?.id}`}
-                        >
-                          {tier?.emoji} {tier?.label}
-                        </span>
-                        <span>{user.rating} rating</span>
-                      </div>
-                      {xp && (
-                        <div className="mt-1">
-                          <div className="flex justify-between text-[10px] text-muted-foreground">
-                            <span>Level {xp.level}</span>
-                            <span>
-                              {xp.current} / {xp.needed} XP
-                            </span>
-                          </div>
-                          <div className="mt-0.5 h-1.5 overflow-hidden rounded-full bg-muted">
-                            <div className="xp-bar h-full" style={{ width: `${xp.pct}%` }} />
-                          </div>
+                      <div className="hidden text-left sm:block">
+                        <div className="text-xs font-semibold leading-tight text-foreground">
+                          {user.username}
                         </div>
-                      )}
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => onTabChange("profile")}>
-                    <UserIcon className="mr-2 h-4 w-4" />
-                    Profile
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onTabChange("leaderboard")}>
-                    <Trophy className="mr-2 h-4 w-4" />
-                    Leaderboard
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleSignOut} className="text-red-500">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Sign out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                        {title ? (
+                          <div className={`text-[10px] font-semibold leading-tight ${title.color}`}>
+                            {title.name}
+                          </div>
+                        ) : (
+                          <div className="text-[10px] leading-tight text-muted-foreground">
+                            <span style={{ color: tier?.color }}>{user.rating}</span> · L{user.level}
+                          </div>
+                        )}
+                      </div>
+                      <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuLabel>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-sm font-semibold">{user.username}</span>
+                        {title && (
+                          <span className={`text-xs font-semibold ${title.color}`}>
+                            {title.name}
+                          </span>
+                        )}
+                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <span
+                            className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-bold text-white tier-${tier?.id}`}
+                          >
+                            {tier?.emoji} {tier?.label}
+                          </span>
+                          <span>{user.rating} rating</span>
+                          <span className="ml-1 inline-flex items-center gap-0.5 text-amber-400">
+                            <Coins className="h-3 w-3" /> {user.pieces}
+                          </span>
+                        </div>
+                        {xp && (
+                          <div className="mt-1">
+                            <div className="flex justify-between text-[10px] text-muted-foreground">
+                              <span>Level {xp.level}</span>
+                              <span>
+                                {xp.current} / {xp.needed} XP
+                              </span>
+                            </div>
+                            <div className="mt-0.5 h-1.5 overflow-hidden rounded-full bg-muted">
+                              <div className="xp-bar h-full" style={{ width: `${xp.pct}%` }} />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => onTabChange("profile")}>
+                      <UserIcon className="mr-2 h-4 w-4" />
+                      Profile
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onTabChange("shop")}>
+                      <ShoppingBag className="mr-2 h-4 w-4" />
+                      Shop
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onTabChange("leaderboard")}>
+                      <Trophy className="mr-2 h-4 w-4" />
+                      Leaderboard
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleSignOut} className="text-red-500">
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Sign out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
             ) : (
               <>
                 <Button

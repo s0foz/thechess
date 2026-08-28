@@ -2,6 +2,24 @@ const { createServer } = require("http");
 const { Server } = require("socket.io");
 const { Chess } = require("chess.js");
 
+// Piece values for awarding currency on capture.
+const PIECE_VALUES = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 };
+
+// Award pieces currency to a user when they capture a piece.
+// Calls the Next.js app's /api/capture endpoint (authenticated via session cookie).
+// Note: the chess-online service doesn't have the user's session cookie, so we
+// call the service-to-service /api/game-end endpoint pattern instead — but for
+// captures, we use a simpler approach: emit a `game:capture` event to the
+// capturing player's client, which then calls /api/capture from the browser
+// (where the session cookie IS available).
+function awardPieces(userId, capturedPiece) {
+  // No server-side call needed — the client receives `game:capture` and
+  // POSTs to /api/capture itself. This function is a placeholder for
+  // future server-side awarding (e.g. if we add a service-to-service auth).
+  // The actual awarding happens client-side via the capture event.
+  console.log(`[capture] user ${userId} captured a ${capturedPiece} (+${PIECE_VALUES[capturedPiece] || 0} pieces potential)`);
+}
+
 // In-memory state for the matchmaking queue + active games.
 const queue = [];
 const games = new Map();
@@ -151,6 +169,18 @@ io.on("connection", (socket) => {
         promotion: mv.promotion,
         san: mv.san,
       });
+
+      // Award pieces currency to the mover if they captured a piece.
+      if (mv.captured) {
+        const capturingUserId = isWhite ? game.white.userId : game.black.userId;
+        awardPieces(capturingUserId, mv.captured);
+        // Also tell the mover's client how many pieces they just earned (for a floating +N toast)
+        io.to(socket.id).emit("game:capture", {
+          pieceType: mv.captured,
+          awarded: PIECE_VALUES[mv.captured] || 0,
+        });
+      }
+
       // Check for game end.
       if (game.chess.isCheckmate()) {
         const winner = turn; // side that just moved wins
