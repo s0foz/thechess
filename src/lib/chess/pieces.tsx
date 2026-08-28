@@ -18,7 +18,10 @@ interface PieceProps {
   skinId?: PieceSkinId;
 }
 
-const DEFAULT_PALETTE = {
+const DEFAULT_PALETTE: {
+  white: { body: string; shade: string; base: string; outline: string };
+  black: { body: string; shade: string; base: string; outline: string; highlight?: string };
+} = {
   white: {
     body: "#fafaf9",
     shade: "#d6d3d1",
@@ -32,7 +35,7 @@ const DEFAULT_PALETTE = {
     outline: "#0c0a09",
     highlight: "#44403c",
   },
-} as const;
+};
 
 export function Piece({ piece, className = "", skinId = "default" }: PieceProps) {
   const isWhite = piece.color === "w";
@@ -63,7 +66,7 @@ function PieceShape({
   isWhite,
 }: {
   type: PieceType;
-  c: typeof PALETTE.white;
+  c: typeof DEFAULT_PALETTE.white;
   isWhite: boolean;
 }) {
   switch (type) {
@@ -83,7 +86,7 @@ function PieceShape({
 }
 
 // Shared base renderer — a rounded pedestal that all pieces sit on.
-function Base({ c }: { c: typeof PALETTE.white }) {
+function Base({ c }: { c: typeof DEFAULT_PALETTE.white }) {
   return (
     <>
       {/* Bottom disc — slightly wider */}
@@ -99,7 +102,7 @@ function Base({ c }: { c: typeof PALETTE.white }) {
   );
 }
 
-function PawnShape({ c }: { c: typeof PALETTE.white }) {
+function PawnShape({ c }: { c: typeof DEFAULT_PALETTE.white }) {
   return (
     <g>
       <Base c={c} />
@@ -109,12 +112,12 @@ function PawnShape({ c }: { c: typeof PALETTE.white }) {
         fill={c.body}
       />
       {/* Head highlight */}
-      <ellipse cx="47" cy="24" rx="2" ry="1.5" fill={c.bodyShade} opacity="0.5" />
+      <ellipse cx="47" cy="24" rx="2" ry="1.5" fill={c.shade} opacity="0.5" />
     </g>
   );
 }
 
-function KnightShape({ c, isWhite }: { c: typeof PALETTE.white; isWhite: boolean }) {
+function KnightShape({ c, isWhite }: { c: typeof DEFAULT_PALETTE.white; isWhite: boolean }) {
   // The knight is the most distinctive piece — a stylized horse head.
   return (
     <g>
@@ -127,12 +130,12 @@ function KnightShape({ c, isWhite }: { c: typeof PALETTE.white; isWhite: boolean
       {/* Mane — a swept-back ridge */}
       <path
         d="M 44 22 C 46 26, 48 30, 50 34 L 52 30 C 50 26, 48 22, 46 19 Z"
-        fill={c.bodyShade}
+        fill={c.shade}
         opacity="0.6"
       />
       <path
         d="M 48 26 C 50 30, 52 34, 54 38 L 56 34 C 54 30, 52 26, 50 23 Z"
-        fill={c.bodyShade}
+        fill={c.shade}
         opacity="0.5"
       />
       {/* Eye — a small dot */}
@@ -140,12 +143,12 @@ function KnightShape({ c, isWhite }: { c: typeof PALETTE.white; isWhite: boolean
       {/* Ear notch */}
       <path
         d="M 64 24 L 67 20 L 69 26 Z"
-        fill={c.bodyShade}
+        fill={c.shade}
       />
       {/* Mouth/snout line */}
       <path
         d="M 66 38 L 70 38"
-        stroke={c.bodyShade}
+        stroke={c.shade}
         strokeWidth="1.5"
         strokeLinecap="round"
         fill="none"
@@ -155,7 +158,7 @@ function KnightShape({ c, isWhite }: { c: typeof PALETTE.white; isWhite: boolean
   );
 }
 
-function BishopShape({ c }: { c: typeof PALETTE.white }) {
+function BishopShape({ c }: { c: typeof DEFAULT_PALETTE.white }) {
   return (
     <g>
       <Base c={c} />
@@ -169,19 +172,19 @@ function BishopShape({ c }: { c: typeof PALETTE.white }) {
       {/* Mitre slit */}
       <path
         d="M 50 28 L 50 36"
-        stroke={c.bodyShade}
+        stroke={c.shade}
         strokeWidth="2"
         strokeLinecap="round"
         fill="none"
         opacity="0.7"
       />
       {/* Collar ring */}
-      <ellipse cx="50" cy="42" rx="10" ry="2" fill={c.bodyShade} opacity="0.4" />
+      <ellipse cx="50" cy="42" rx="10" ry="2" fill={c.shade} opacity="0.4" />
     </g>
   );
 }
 
-function RookShape({ c }: { c: typeof PALETTE.white }) {
+function RookShape({ c }: { c: typeof DEFAULT_PALETTE.white }) {
   return (
     <g>
       <Base c={c} />
@@ -196,14 +199,14 @@ function RookShape({ c }: { c: typeof PALETTE.white }) {
         fill={c.body}
       />
       {/* Top band detail */}
-      <rect x="38" y="38" width="24" height="2.5" fill={c.bodyShade} opacity="0.5" />
+      <rect x="38" y="38" width="24" height="2.5" fill={c.shade} opacity="0.5" />
       {/* Mid band detail */}
-      <rect x="40" y="56" width="20" height="2" fill={c.bodyShade} opacity="0.4" />
+      <rect x="40" y="56" width="20" height="2" fill={c.shade} opacity="0.4" />
     </g>
   );
 }
 
-function QueenShape({ c }: { c: typeof PALETTE.white }) {
+function QueenShape({ c }: { c: typeof DEFAULT_PALETTE.white }) {
   return (
     <g>
       <Base c={c} />
@@ -218,18 +221,18 @@ function QueenShape({ c }: { c: typeof PALETTE.white }) {
         fill={c.body}
       />
       {/* Crown jewels — small dots on each point */}
-      <circle cx="34" cy="26" r="1.8" fill={c.bodyShade} />
-      <circle cx="44" cy="22" r="1.8" fill={c.bodyShade} />
-      <circle cx="50" cy="20" r="2" fill={c.bodyShade} />
-      <circle cx="56" cy="22" r="1.8" fill={c.bodyShade} />
-      <circle cx="66" cy="26" r="1.8" fill={c.bodyShade} />
+      <circle cx="34" cy="26" r="1.8" fill={c.shade} />
+      <circle cx="44" cy="22" r="1.8" fill={c.shade} />
+      <circle cx="50" cy="20" r="2" fill={c.shade} />
+      <circle cx="56" cy="22" r="1.8" fill={c.shade} />
+      <circle cx="66" cy="26" r="1.8" fill={c.shade} />
       {/* Collar ring */}
-      <ellipse cx="50" cy="44" rx="12" ry="2" fill={c.bodyShade} opacity="0.4" />
+      <ellipse cx="50" cy="44" rx="12" ry="2" fill={c.shade} opacity="0.4" />
     </g>
   );
 }
 
-function KingShape({ c }: { c: typeof PALETTE.white }) {
+function KingShape({ c }: { c: typeof DEFAULT_PALETTE.white }) {
   return (
     <g>
       <Base c={c} />
@@ -252,7 +255,7 @@ function KingShape({ c }: { c: typeof PALETTE.white }) {
       <rect x="48" y="14" width="4" height="14" fill={c.body} />
       <rect x="44" y="18" width="12" height="3.5" fill={c.body} />
       {/* Collar ring */}
-      <ellipse cx="50" cy="44" rx="12" ry="2" fill={c.bodyShade} opacity="0.4" />
+      <ellipse cx="50" cy="44" rx="12" ry="2" fill={c.shade} opacity="0.4" />
     </g>
   );
 }

@@ -191,14 +191,14 @@ export function OnlinePlaySection() {
           <PlayerBar
             username={state.opponent?.username ?? "Opponent"}
             rating={state.opponent?.rating ?? 0}
-            tier={opponentTier}
+            tier={opponentTier ?? tierForRating(0)}
             captures={snapshot}
             perspective={orientation}
             isOpponent
             disconnected={state.opponentDisconnected}
             isToMove={snapshot?.turn !== state.color && state.status === "playing"}
             drawOffer={
-              state.drawOfferedBy && state.drawOfferedBy !== orientation
+              state.drawOfferedBy && state.drawOfferedBy !== (orientation === "w" ? "white" : "black")
                 ? {
                     onAccept: () => online.respondDraw(true),
                     onDecline: () => online.respondDraw(false),
@@ -235,7 +235,7 @@ export function OnlinePlaySection() {
               state.status === "playing"
                 ? {
                     onDraw: online.offerDraw,
-                    drawOfferedByMe: state.drawOfferedBy === orientation,
+                    drawOfferedByMe: state.drawOfferedBy === (orientation === "w" ? "white" : "black"),
                     onResign: () => {
                       if (window.confirm("Resign this game? You will lose rating.")) {
                         online.resign();

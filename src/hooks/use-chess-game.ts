@@ -33,7 +33,7 @@ export function useChessGame(initialSettings?: GameSettings) {
   const [pendingPromotion, setPendingPromotion] = useState<PendingPromotion | null>(null);
   const [isAiThinking, setIsAiThinking] = useState(false);
   const [lastMoveSan, setLastMoveSan] = useState<string | null>(null);
-  const [captureFlash, setCaptureFlash] = useState<{ pieceType: "p" | "n" | "b" | "r" | "q"; awarded: number } | null>(null);
+  const [captureFlash, setCaptureFlash] = useState<{ pieceType: "p" | "n" | "b" | "r" | "q" | "k"; awarded: number } | null>(null);
 
   const refresh = useCallback(() => {
     setSnapshot(engineRef.current.snapshot());

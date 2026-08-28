@@ -7,6 +7,8 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   reactStrictMode: false,
+  // Allow the preview iframe (preview-chat-*.space-z.ai) to load Next.js dev assets
+  allowedDevOrigins: ["*.space-z.ai"],
 };
 
 export default nextConfig;

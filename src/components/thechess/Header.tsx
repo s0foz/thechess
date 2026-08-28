@@ -16,7 +16,17 @@ import { Logo } from "./Logo";
 import { AuthModal } from "./AuthModal";
 import { tierForRating, xpProgress } from "@/lib/thechess/tiers";
 import { getTitle } from "@/lib/thechess/shop";
-import type { TabId } from "./Header";
+
+export type TabId =
+  | "home"
+  | "play-ai"
+  | "play-online"
+  | "puzzles"
+  | "learn"
+  | "analysis"
+  | "shop"
+  | "leaderboard"
+  | "profile";
 import {
   LogOut,
   User as UserIcon,

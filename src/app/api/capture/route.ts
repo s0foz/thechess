@@ -8,12 +8,12 @@ export const runtime = "nodejs";
 // POST /api/capture — awards pieces to the user when they capture a piece.
 // Called from the frontend whenever a capture happens (both AI and online games).
 interface CaptureBody {
-  pieceType: "p" | "n" | "b" | "r" | "q";
+  pieceType: "p" | "n" | "b" | "r" | "q" | "k";
   count?: number; // default 1
 }
 
 const PIECE_VALUES: Record<string, number> = {
-  p: 1, n: 3, b: 3, r: 5, q: 9,
+  p: 1, n: 3, b: 3, r: 5, q: 9, k: 0,
 };
 
 export async function POST(req: Request) {
